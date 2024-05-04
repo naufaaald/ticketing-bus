@@ -45,6 +45,7 @@
             </style>
         @endif
     @endguest
+    @stack('page-styles')
 
     @yield('styles')
 </head>

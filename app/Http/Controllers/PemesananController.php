@@ -194,4 +194,8 @@ class PemesananController extends Controller
 
         return redirect('/')->with('success', 'Pemesanan Tiket ' . $rute->transportasi->category->name . ' Success!');
     }
+    public function payment()
+    {
+        return view('client.pembayaran');
+    }
 }

@@ -32,5 +32,6 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/', App\Http\Controllers\PemesananController::class);
         Route::get('/history', [App\Http\Controllers\LaporanController::class, 'history'])->name('history');
         Route::get('/{id}/{data}', [App\Http\Controllers\PemesananController::class, 'show'])->name('show');
+        Route::get('/pembayaran', [App\Http\Controllers\PemesananController::class, 'payment'])->name('pembayaran.create');
     });
 });
