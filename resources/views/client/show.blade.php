@@ -38,7 +38,7 @@
                     <div class="card-body">
                       <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                          <div class="font-weight-bold text-gray-800 text-uppercase mb-1">{{ $data['tujuan'] }}</div>
+                          <div class="font-weight-bold text-gray-800 text-uppercase mb-1">{{ $data['tujuan'] }} - 14:30</div>
                           <div class="h5 mb-0 font-weight-bold text-danger mb-1">{{ $data['start'] }} - {{ $data['end'] }}</div>
                           <small class="text-muted">{{ $data['transportasi'] }} ({{ $data['kode'] }})</small>
                         </div>
