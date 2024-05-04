@@ -46,6 +46,15 @@
         @endif
     @endguest
     @stack('page-styles')
+    <style>
+        #content {
+            background-image: url('{{ asset('img/WhatsApp Image 2024-05-04 at 5.50.56 PM.jpeg') }}');
+            width: 100%;
+            height: 85vh;
+            background-size: cover;
+            position: relative;
+        }
+    </style>
 
     @yield('styles')
 </head>
@@ -99,7 +108,7 @@
             </div>
             <!-- End of Page Wrapper -->
         @else
-            <div class="bg-gradient-danger" style="height: 160px; ">
+            <div class="bg-gradient-danger" style="height: 160px;">
                 <nav class="navbar navbar-expand navbar-light topbar mb-4">
                     <div class="container">
                         <a class="title" href="{{ url('/') }}">
@@ -148,7 +157,7 @@
                     </div>
                 </nav>
             </div>
-            <div style="margin-top: -70px">
+            <div id="content" style="margin-top: -70px; ">
                 <div class="container">
                     @yield('content')
                 </div>
