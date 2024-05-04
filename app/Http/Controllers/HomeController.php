@@ -32,5 +32,6 @@ class HomeController extends Controller
         $transportasi = Transportasi::count();
         $user = User::count();
         return view('server.home', compact('rute', 'pendapatan', 'transportasi', 'user'));
+
     }
 }
