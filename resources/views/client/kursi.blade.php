@@ -10,30 +10,6 @@
             <a href="javascript:window.history.back();" class="text-white btn"><i class="fas fa-arrow-left mr-2"></i>
                 Kembali</a>
             <div class="row" style="margin-top: 100px ">
-                {{-- @for ($i = 1; $i <= $transportasi->jumlah; $i++)
-                    @php
-                        $array = ['kursi' => 'K' . $i, 'rute' => $data['id'], 'waktu' => $data['waktu']];
-                        $cekData = json_encode($array);
-                    @endphp
-                    @if ($transportasi->kursi($cekData) != null)
-                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                            <a href="{{ route('pesan', ['kursi' => 'K' . $i, 'data' => Crypt::encrypt($data)]) }}">
-                                <div class="kursi bg-white">
-                                    <div class="font-weight-bold text-primary m-auto" style="font-size: 26px;">
-                                        K{{ $i }}</div>
-                                </div>
-                            </a>
-                        </div>
-                    @else
-                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-                            <div class="kursi" style="background: #858796">
-                                <div class="font-weight-bold text-white m-auto" style="font-size: 26px;">
-                                    K{{ $i }}</div>
-                            </div>
-                        </div>
-                    @endif
-                @endfor --}}
-
                 <div class="col-lg-6 text-center col-12 ">
                     <div class="col-12 col-lg-12 ">
                         <p class="text-muted text-1">Click on Seat to select/ deselect</p>
@@ -55,6 +31,10 @@
                             <input type="text" class="form-control" id="phone-number" placeholder="Nomor Telepon">
                         </div>
                         <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Email">
+                        </div>
+                        <div class="form-group">
                             <label for="address">Alamat</label>
                             <textarea class="form-control" rows="2" type="text" id="address" placeholder="Alamat">
                             </textarea>
@@ -71,8 +51,6 @@
                         <div class="justify-content-end">
 
                             <a class="btn btn-primary" href="{{ route('pembayaran.create') }}">Submit</a>
-
-
                         </div>
 
 

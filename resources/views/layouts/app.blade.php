@@ -99,8 +99,7 @@
             </div>
             <!-- End of Page Wrapper -->
         @else
-            <div class="bg-gradient-danger"
-                style="height: 160px; border-bottom-left-radius: 50% 20px; border-bottom-right-radius: 50% 20px;">
+            <div class="bg-gradient-danger" style="height: 160px; ">
                 <nav class="navbar navbar-expand navbar-light topbar mb-4">
                     <div class="container">
                         <a class="title" href="{{ url('/') }}">
