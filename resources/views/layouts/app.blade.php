@@ -46,7 +46,7 @@
         @endif
     @endguest
     @stack('page-styles')
-    <style>
+    {{-- <style>
         #content {
             background-image: url('{{ asset('img/WhatsApp Image 2024-05-04 at 5.50.56 PM.jpeg') }}');
             width: 100%;
@@ -54,7 +54,7 @@
             background-size: cover;
             position: relative;
         }
-    </style>
+    </style> --}}
 
     @yield('styles')
 </head>
