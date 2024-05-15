@@ -9,16 +9,7 @@ class Pemesanan extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'kode',
-        'kursi',
-        'waktu',
-        'total',
-        'status',
-        'rute_id',
-        'penumpang_id',
-        'petugas_id'
-    ];
+    protected $guarded = ['id'];
 
     public function rute()
     {
@@ -27,12 +18,17 @@ class Pemesanan extends Model
 
     public function penumpang()
     {
-        return $this->belongsTo('App\Models\User', 'penumpang_id');
+        return $this->belongsTo('App\Models\User', 'pemesan_id');
     }
 
     public function petugas()
     {
         return $this->belongsTo('App\Models\User', 'petugas_id');
+    }
+
+    public function pembayaran()
+    {
+        return $this->hasOne('App\Models\Pembayaran', 'kode');
     }
 
     protected $table = 'pemesanan';

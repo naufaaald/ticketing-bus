@@ -27,11 +27,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['penumpang'])->group(function () {
-        Route::get('/pesan/{kursi}/{data}', [App\Http\Controllers\PemesananController::class, 'pesan'])->name('pesan');
-        Route::get('/cari/kursi/{data}', [App\Http\Controllers\PemesananController::class, 'edit'])->name('cari.kursi');
+        Route::get('/payment/{kode}', [App\Http\Controllers\PembayaranController::class, 'index'])->name('payment');
+        Route::get('/payment-update', [App\Http\Controllers\PembayaranController::class, 'updateStatus'])->name('payment.update');
+        Route::post('/pesan', [App\Http\Controllers\PemesananController::class, 'pesan'])->name('pesan');
         Route::resource('/', App\Http\Controllers\PemesananController::class);
         Route::get('/history', [App\Http\Controllers\LaporanController::class, 'history'])->name('history');
         Route::get('/{id}/{data}', [App\Http\Controllers\PemesananController::class, 'show'])->name('show');
-        Route::get('/pembayaran', [App\Http\Controllers\PemesananController::class, 'payment'])->name('pembayaran.create');
     });
 });

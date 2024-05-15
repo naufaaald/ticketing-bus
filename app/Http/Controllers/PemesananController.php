@@ -2,16 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Rute;
 use App\Models\Category;
 use App\Models\Pemesanan;
+use App\Models\Pembayaran;
 use App\Models\Transportasi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Redirect;
 
 class PemesananController extends Controller
 {
+    //construktor cek status pembayaran yang masih belum bayar dan sudah melewati batas waktu
+    public function __construct()
+    {
+        $status = ['Belum Bayar'];
+        $pemesanan = Pemesanan::whereIn('status', $status)->get();
+        foreach ($pemesanan as $val) {
+            $pembayaran = Pembayaran::where('kode_pemesanan', $val->kode)->first();
+            if ($pembayaran) {
+                $batas_waktu = $pembayaran->batas_waktu_pembayaran;
+                if (now() > $batas_waktu) {
+                    $pembayaran->status = 'Gagal';
+                    $pembayaran->save();
+                    $val->status = 'Gagal';
+                    $val->save();
+                }
+            }
+        }
+    }
     /**
      * Display a listing of the resource.
      *
@@ -67,33 +89,6 @@ class PemesananController extends Controller
             ];
             $data = Crypt::encrypt($data);
             return redirect()->route('show', ['id' => $category->slug, 'data' => $data]);
-        } else {
-            $this->validate($request, [
-                'rute_id' => 'required',
-                'waktu' => 'required',
-            ]);
-
-            $huruf = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-            $kodePemesanan = strtoupper(substr(str_shuffle($huruf), 0, 7));
-
-            $rute = Rute::with('transportasi.category')->find($request->rute_id);
-            // $jumlah_kursi = $rute->transportasi->jumlah + 2;
-            // $kursi = (int) floor($jumlah_kursi / 5);
-            // $kode = "ABCDE";
-            // $kodeKursi = strtoupper(substr(str_shuffle($kode), 0, 1) . rand(1, $kursi));
-
-            $waktu = $request->waktu . " " . $rute->jam;
-
-            Pemesanan::Create([
-                'kode' => $kodePemesanan,
-                // 'kursi' => $request,
-                'waktu' => $waktu,
-                'total' => $rute->harga,
-                'rute_id' => $rute->id,
-                'penumpang_id' => Auth::user()->id
-            ]);
-
-            return redirect()->back()->with('success', 'Pemesanan Tiket ' . $rute->transportasi->category->name . ' Success!');
         }
     }
 
@@ -105,12 +100,18 @@ class PemesananController extends Controller
      */
     public function show($id, $data)
     {
+        $user = auth()->user(); // Mendapatkan data pengguna yang sudah login
         $data = Crypt::decrypt($data);
+        $status = ['Berhasil', 'Belum Bayar', 'Verifikasi'];
         $category = Category::find($data['category']);
         $rute = Rute::with('transportasi')->where('start', $data['start'])->where('end', $data['end'])->get();
         if ($rute->count() > 0) {
             foreach ($rute as $val) {
                 $pemesanan = Pemesanan::where('rute_id', $val->id)->where('waktu')->count();
+                $dataPesanan = Pemesanan::where('rute_id', $val->id)
+                    ->whereDate('waktu', $data['waktu'])
+                    ->whereIn('status', $status)
+                    ->pluck('kursi');
                 if ($val->transportasi) {
                     $kursi = Transportasi::find($val->transportasi_id)->jumlah - $pemesanan;
                     if ($val->transportasi->category_id == $category->id) {
@@ -124,6 +125,7 @@ class PemesananController extends Controller
                             'kursi' => $kursi,
                             'waktu' => $data['waktu'],
                             'id' => $val->id,
+                            'dataPesanan' => $dataPesanan,
                         ];
                     }
                 }
@@ -133,7 +135,8 @@ class PemesananController extends Controller
             $dataRute = [];
         }
         $id = $category->name;
-        return view('client.show', compact('id', 'dataRute'));
+
+        return view('client.show', compact('id', 'dataRute', 'user'));
     }
 
     /**
@@ -144,10 +147,10 @@ class PemesananController extends Controller
      */
     public function edit($id)
     {
-        $data = Crypt::decrypt($id);
-        $rute = Rute::find($data['id']);
-        $transportasi = Transportasi::find($rute->transportasi_id);
-        return view('client.kursi', compact('data', 'transportasi'));
+        // $data = Crypt::decrypt($id);
+        // $rute = Rute::find($data['id']);
+        // $transportasi = Transportasi::find($rute->transportasi_id);
+        // return view('client.kursi', compact('data', 'transportasi'));
     }
 
     /**
@@ -173,29 +176,71 @@ class PemesananController extends Controller
         //
     }
 
-    public function pesan($kursi, $data)
+    public function pesan(Request $request)
     {
-        $d = Crypt::decrypt($data);
-        $huruf = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        $kodePemesanan = strtoupper(substr(str_shuffle($huruf), 0, 7));
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'idTiket' => 'required',
+                'namaPenumpang' => 'required',
+                'nomorTelepon' => 'required',
+                'email' => 'required|email',
+                'alamat' => 'required',
+                'nomorKursi' => 'required',
+                'harga' => 'required',
+                'waktu' => 'required',
+            ]);
+            $user =  Auth::user()->id;
+            $huruf = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            $kodePemesanan = strtoupper(substr(str_shuffle($huruf), 0, 7));
+            $rute = Rute::with('transportasi.category')->find($request->idTiket);
+            $waktu = $request->waktu . " " . $rute->jam;
+            $harga = (int)str_replace(['Rp.', '.', ','], '', $request->harga);
+            //status yang diizinkan
+            $status = ['Berhasil', 'Belum Bayar', 'Verifikasi'];
+            // buat object store data pemesanan dengan lockForUpdate
+            $pemesanan = Pemesanan::where('rute_id', $request->idTiket)
+                ->whereDate('waktu', $request->waktu)
+                ->whereIn('status', $status)
+                ->lockForUpdate()
+                ->get();
+            // cek apakah kursi yang dipilih sudah ada yang memesan
+            $kursiOrder = explode(',', $request->nomorKursi);
+            $kursiNonAvailable = $pemesanan->pluck('kursi')->toArray();
+            // cek kursi konflik
+            $kursiKonflik  = array_intersect($kursiOrder, $kursiNonAvailable);
+            // cek jika terjadi konflik kursi
+            if (!empty($kursiKonflik)) {
+                // return response()->json(['error' => 'Kursi yang anda pilih sudah dipesan oleh orang lain']);
+                return redirect()->back()->with('error-sweet-alert', 'Kursi yang anda pilih sudah dipesan oleh penumpang lain, Silahkan pilih kursi yang lain');
+            } else {
+                $store = new Pemesanan();
+                $store->kode = $kodePemesanan;
+                $store->nama_penumpang = $request->namaPenumpang;
+                $store->no_telepon = $request->nomorTelepon;
+                $store->email = $request->email;
+                $store->alamat = $request->alamat;
+                $store->kursi = $request->nomorKursi;
+                $store->waktu = $waktu;
+                $store->status = 'Belum Bayar';
+                $store->total = $harga;
+                $store->pemesan_id = $user;
+                $store->rute_id = $request->idTiket;
 
-        $rute = Rute::with('transportasi.category')->find($d['id']);
+                $pembayaran = new Pembayaran();
+                $pembayaran->kode_pemesanan = $kodePemesanan;
+                $pembayaran->batas_waktu_pembayaran = Carbon::now()->addMinutes(2)->format('Y-m-d H:i:s');
+                $store->save();
+                $pembayaran->save();
 
-        $waktu = $d['waktu'] . " " . $rute->jam;
-
-        Pemesanan::Create([
-            'kode' => $kodePemesanan,
-            'kursi' => $kursi,
-            'waktu' => $waktu,
-            'total' => $rute->harga,
-            'rute_id' => $rute->id,
-            'penumpang_id' => Auth::user()->id
-        ]);
-
-        return redirect('/')->with('success', 'Pemesanan Tiket ' . $rute->transportasi->category->name . ' Success!');
-    }
-    public function payment()
-    {
-        return view('client.pembayaran');
+                //ambil id pesanan
+                $kodePemesanan = Crypt::encrypt($kodePemesanan);
+            }
+            DB::commit();
+            return redirect()->route('payment', ['kode' => $kodePemesanan])->with('success', 'Pemesanan berhasil, silahkan lakukan pembayaran sebelum batas waktu pembayaran');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect('/')->with('error', $e->getMessage());
+        }
     }
 }

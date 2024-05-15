@@ -110,7 +110,7 @@
             </div>
             <!-- End of Page Wrapper -->
         @else
-            <div class="bg-gradient-danger" style="height: 160px;">
+            <div class="bg-danger">
                 <nav class="navbar navbar-expand navbar-light topbar mb-4">
                     <div class="container">
                         <a class="title" href="{{ url('/') }}">
@@ -159,8 +159,8 @@
                     </div>
                 </nav>
             </div>
-            <div id="content" style="margin-top: -70px; ">
-                <div class="container">
+            <div id="content">
+                <div class="container" style="min-height:85vh; ">
                     @yield('content')
                 </div>
             </div>
@@ -211,6 +211,21 @@
     @if (Session::has('error'))
         <script>
             toastr.error("{{ Session('error') }}");
+        </script>
+    @endif
+    @if (Session::has('error-sweet-alert'))
+        <script>
+            Swal.fire({
+                title: 'Gagal',
+                text: "{{ Session('error-sweet-alert') }}",
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#E74A3B',
+                customClass: {
+                    // Ukuran teks pada sweet alert
+                    content: 'text-size-10px'
+                }
+            });
         </script>
     @endif
 </body>

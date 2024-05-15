@@ -16,22 +16,33 @@ class UsersSeeder extends Seeder
     public function run()
     {
         DB::table('users')->insert([
-            'id' => 1,
-            'name' => 'Admin',
-            'username' => 'admin',
-            'password' => Hash::make('admin123'),
-            'level' => 'Admin',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
-        ],
-        [
-            'id' => 2,
-            'name' => 'Naufal',
-            'username' => 'naufal',
-            'password' => Hash::make('12345678'),
-            'level' => 'Penumpang',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
+            [
+                'id' => 1,
+                'name' => 'Admin',
+                'username' => 'admin',
+                'password' => Hash::make('admin123'),
+                'level' => 'Admin',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id' => 2,
+                'name' => 'Naufal',
+                'username' => 'naufal',
+                'password' => Hash::make('12345678'),
+                'level' => 'Penumpang',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id' => 3,
+                'name' => 'Harry Antomy',
+                'username' => 'harry',
+                'password' => Hash::make('12345678'),
+                'level' => 'Penumpang',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
         ]);
     }
 }

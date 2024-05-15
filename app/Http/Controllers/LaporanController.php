@@ -38,7 +38,7 @@ class LaporanController extends Controller
     public function pembayaran($id)
     {
         Pemesanan::find($id)->update([
-            'status' => 'Sudah Bayar',
+            'status' => 'Berhasil',
             'petugas_id' => Auth::user()->id
         ]);
 
